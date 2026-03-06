@@ -132,12 +132,12 @@ Proliferators are delivered via **logistics bots** (see Logistics Philosophy) so
 ### Planetary Logistics Station (PLS)
 
 - **Belt slots:** 12 total belt connections (inputs + outputs combined)
-- **Item slots:** 3 — maximum 3 distinct items can be configured to request or supply
+- **Item slots:** 4 — maximum 4 distinct items can be configured to request or supply
 - **Drone slots:** up to 50 logistics drones
 - Drones operate **within the same planet only**
 - Each belt slot can carry up to 30 /s (Mk.III), or more with stackers
 
-The 3-item slot limit is the primary design constraint. A module requiring 4+ distinct item flows must use **multiple PLS stations**. Multiple belt slots can be assigned to the same item to increase throughput (e.g. 4 belts × 30 /s = 120 /s for one item, consuming only 1 item slot).
+The 4-item slot limit is the primary design constraint. A module requiring 5+ distinct item flows must use **multiple PLS stations**. Multiple belt slots can be assigned to the same item to increase throughput (e.g. 4 belts × 30 /s = 120 /s for one item, consuming only 1 item slot).
 
 ### Interstellar Logistics Station (ILS)
 
@@ -149,7 +149,7 @@ The 3-item slot limit is the primary design constraint. A module requiring 4+ di
 
 ### Key Constraint
 
-A single belt slot on Mk.III carries **30 items/s**. Stackers multiply this without consuming additional slots. The **item slot count** (3 for PLS, 5 for ILS) is typically the binding design constraint, not the belt slot count.
+A single belt slot on Mk.III carries **30 items/s**. Stackers multiply this without consuming additional slots. The **item slot count** (4 for PLS, 5 for ILS) is typically the binding design constraint, not the belt slot count.
 
 ---
 
@@ -167,7 +167,7 @@ Each production planet has a **polar ILS** that connects it to the star system h
 Individual production modules use one or more **Planetary Logistics Stations** as a self-contained black box. Each PLS module:
 - Accepts input materials on its belt slots (demand)
 - Outputs finished products on its belt slots (supply)
-- Is designed around the **PLS item slot constraint** (3 distinct items max; use multiple PLS if more are needed)
+- Is designed around the **PLS item slot constraint** (4 distinct items max; use multiple PLS if more are needed)
 - Is fully self-contained — internal ratios are balanced without relying on external buffering
 
 ### Proliferator & Low-Volume Item Delivery
@@ -240,7 +240,7 @@ Then provide the Column Summary, Machine Count table, PLS tables, Output Belt Ut
 |---|---|---|---|---|
 
 ### PLS Allocation
-Map every distinct item to a PLS item slot. Each PLS supports **3 distinct items**; split across multiple PLS stations numbered sequentially (PLS 1, PLS 2, etc.) as needed.
+Map every distinct item to a PLS item slot. Each PLS supports **4 distinct items**; split across multiple PLS stations numbered sequentially (PLS 1, PLS 2, etc.) as needed.
 
 **Column count** = `floor(total belt slots / belts per column)`, where belts per column = input belts + output belts (each column has its own dedicated output belt connecting directly to the PLS).
 
@@ -269,7 +269,7 @@ A production module is **bounded by its PLS input/output belt slots**. Designing
 
 ### Rules
 
-1. **Each PLS supports exactly 3 distinct item slots.** If a module requires more than 3 distinct item flows (inputs + outputs combined), it must use multiple PLS stations. Plan slot allocation explicitly before sizing the module.
+1. **Each PLS supports exactly 4 distinct item slots.** If a module requires more than 4 distinct item flows (inputs + outputs combined), it must use multiple PLS stations. Plan slot allocation explicitly before sizing the module.
 
 2. **Each PLS has 12 belt connections.** Multiple belts can be assigned to the same item to scale throughput. For example, assigning 4 Mk.III belts to one item gives 120 /s on that item while consuming only 1 item slot.
 
