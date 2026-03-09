@@ -132,12 +132,12 @@ Proliferators are delivered via **logistics bots** (see Logistics Philosophy) so
 ### Planetary Logistics Station (PLS)
 
 - **Belt slots:** 12 total belt connections (inputs + outputs combined)
-- **Item slots:** 4 — maximum 4 distinct items can be configured to request or supply
+- **Item slots:** 3 — maximum 3 distinct items can be configured to request or supply
 - **Drone slots:** up to 50 logistics drones
 - Drones operate **within the same planet only**
 - Each belt slot can carry up to 30 /s (Mk.III), or more with stackers
 
-The 4-item slot limit is the primary design constraint. A module requiring 5+ distinct item flows must use **multiple PLS stations**. Multiple belt slots can be assigned to the same item to increase throughput (e.g. 4 belts × 30 /s = 120 /s for one item, consuming only 1 item slot).
+The 3-item slot limit is the primary design constraint. A module requiring 4+ distinct item flows must use **multiple PLS stations**. Multiple belt slots can be assigned to the same item to increase throughput (e.g. 4 belts × 30 /s = 120 /s for one item, consuming only 1 item slot).
 
 ### Interstellar Logistics Station (ILS)
 
@@ -149,7 +149,7 @@ The 4-item slot limit is the primary design constraint. A module requiring 5+ di
 
 ### Key Constraint
 
-A single belt slot on Mk.III carries **30 items/s**. Stackers multiply this without consuming additional slots. The **item slot count** (4 for PLS, 5 for ILS) is typically the binding design constraint, not the belt slot count.
+A single belt slot on Mk.III carries **30 items/s**. Stackers multiply this without consuming additional slots. The **item slot count** (3 for PLS, 5 for ILS) is typically the binding design constraint, not the belt slot count.
 
 ---
 
@@ -167,7 +167,7 @@ Each production planet has a **polar ILS** that connects it to the star system h
 Individual production modules use one or more **Planetary Logistics Stations** as a self-contained black box. Each PLS module:
 - Accepts input materials on its belt slots (demand)
 - Outputs finished products on its belt slots (supply)
-- Is designed around the **PLS item slot constraint** (4 distinct items max; use multiple PLS if more are needed)
+- Is designed around the **PLS item slot constraint** (3 distinct items max; use multiple PLS if more are needed)
 - Is fully self-contained — internal ratios are balanced without relying on external buffering
 
 ### Proliferator & Low-Volume Item Delivery
@@ -203,19 +203,40 @@ Only ask if something is genuinely ambiguous from the request (e.g. a building n
 When providing a production chain, present it in the following structure:
 
 ## Workings
-Show all calculations: per-machine rates, belt ratio derivation, column sizing, output belt check, column count. This section is for transparency — keep it concise but complete.
+Show all calculations: per-machine rates, column sizing, output belt check, column count. This section is for transparency — keep it concise but complete.
 
 **Column definition steps:**
-1. Calculate consumption rate per machine for each input item
-2. Find the ratio of those rates — this gives the natural belt ratio (e.g. 2:1 means 2 belts of item A per 1 belt of item B)
-3. Find the smallest integer machine count where each input item's assigned belt count (per the ratio) is filled to ≥95% without exceeding capacity
-4. The belts-per-column for each item is the integer from the ratio — all belts fill together at approximately the same utilization %
-5. **Cap:** total belts per column (inputs + output) must not exceed **6**. If the natural ratio produces more than 6 belts per column, scale down proportionally until the total fits within 6, reserving 1 slot for the output. The user may override this cap explicitly.
+
+1. Calculate each input item's **consumption rate per machine** from the recipe.
+
+2. Identify the **binding input** — the item with the highest consumption rate per machine. This item fills a belt fastest and anchors the column size.
+
+3. Calculate **machines per column** from the binding input:
+   ```
+   machines_per_column = belt_capacity / binding_input_consumption_rate_per_machine
+   ```
+   This is the number of machines one belt of the binding input can fully feed. Round down to the nearest integer if not exact, and note utilization.
+
+4. For each other input, calculate how many belts that item requires at the machines-per-column count:
+   ```
+   belts_needed = ceil((machines_per_column × consumption_rate_per_machine) / belt_capacity)
+   ```
+   Note the utilization of each belt.
+
+5. Calculate output per column:
+   ```
+   output_per_column = machines_per_column × output_rate_per_machine
+   ```
+   If output_per_column exceeds the belt tier's max throughput, use a stacked output belt and apply the 80% derating rule (effective capacity = nominal stacked capacity × 0.80).
+
+6. **Cap:** total belts per column (all inputs + output) must not exceed **6**. If the total exceeds 6, reduce machines_per_column until the total fits, reserving 1 slot for the output. The user may override this cap explicitly.
+
+7. **Column count:** `floor(total PLS belt slots / belts_per_column)`
 
 Present the column definition as:
 
-| Item | Consumption /machine/s | Belt ratio | Belts/column | Machines to fill | Belt utilization |
-|---|---|---|---|---|---|
+| Item | Consumption /machine/s | Belts/column | Machines/column | Belt utilization |
+|---|---|---|---|---|
 
 ## Build Specification
 
@@ -240,7 +261,7 @@ Then provide the Column Summary, Machine Count table, PLS tables, Output Belt Ut
 |---|---|---|---|---|
 
 ### PLS Allocation
-Map every distinct item to a PLS item slot. Each PLS supports **4 distinct items**; split across multiple PLS stations numbered sequentially (PLS 1, PLS 2, etc.) as needed.
+Map every distinct item to a PLS item slot. Each PLS supports **3 distinct items**; split across multiple PLS stations numbered sequentially (PLS 1, PLS 2, etc.) as needed.
 
 **Column count** = `floor(total belt slots / belts per column)`, where belts per column = input belts + output belts (each column has its own dedicated output belt connecting directly to the PLS).
 
@@ -269,7 +290,7 @@ A production module is **bounded by its PLS input/output belt slots**. Designing
 
 ### Rules
 
-1. **Each PLS supports exactly 4 distinct item slots.** If a module requires more than 4 distinct item flows (inputs + outputs combined), it must use multiple PLS stations. Plan slot allocation explicitly before sizing the module.
+1. **Each PLS supports exactly 3 distinct item slots.** If a module requires more than 3 distinct item flows (inputs + outputs combined), it must use multiple PLS stations. Plan slot allocation explicitly before sizing the module.
 
 2. **Each PLS has 12 belt connections.** Multiple belts can be assigned to the same item to scale throughput. For example, assigning 4 Mk.III belts to one item gives 120 /s on that item while consuming only 1 item slot.
 
@@ -299,9 +320,9 @@ A production module is **bounded by its PLS input/output belt slots**. Designing
 - critical_photon consumed: 2/2 = 1.000 /s
 - antimatter output: (2/2) × 1.25 = 1.250 /s
 
-**Belt ratio:** 1 input only → 1 belt per column
+**Binding input:** critical_photon at 1.000 /s (only input)
 
-**Machines to fill one input belt:** 30 / 1.000 = 30 machines → 100% utilization
+**Machines per column:** 30 / 1.000 = 30 machines → 100% belt utilization
 
 **Output per column:** 30 × 1.250 = 37.5 /s — exceeds unstacked Mk.III (30 /s), requires 1× stacked output belt per column (48 /s effective, 78% utilized)
 
@@ -310,6 +331,10 @@ A production module is **bounded by its PLS input/output belt slots**. Designing
 **Column count:** floor(12 / 2) = 6 columns, 12 / 12 belt slots used
 
 **Co-product handling:** hydrogen is a co-product and is discarded — no belt slot required.
+
+| Item | Consumption /machine/s | Belts/column | Machines/column | Belt utilization |
+|---|---|---|---|---|
+| critical_photon | 1.000 | 1 | 30 | 100% |
 
 ---
 
@@ -351,6 +376,76 @@ A production module is **bounded by its PLS input/output belt slots**. Designing
 
 ---
 
+## Worked Example: carbon_nanotube
+
+## Workings
+
+**Recipe:** 3× graphene + 1× titanium_ingot → 2× carbon_nanotube, 4s, Chemical Plant (1.00×, prolif +25%)
+
+**Per-machine rates:**
+- graphene consumed: 3/4 = 0.750 /s
+- titanium_ingot consumed: 1/4 = 0.250 /s
+- carbon_nanotube output: (2/4) × 1.25 = 0.625 /s
+
+**Binding input:** graphene at 0.750 /s (highest consumption rate)
+
+**Machines per column:** 30 / 0.750 = 40 machines → 100% graphene belt utilization
+
+**Titanium_ingot belts per column:** ceil(40 × 0.250 / 30) = ceil(0.333) = 1 belt → 40 × 0.250 = 10 /s → 33% utilized
+
+**Output per column:** 40 × 0.625 = 25 /s → below 30 /s, unstacked ✓
+
+**Belts per column:** 1 graphene + 1 titanium_ingot + 1 output = 3 belts ✓ (within 6-belt cap)
+
+**Column count:** floor(12 / 3) = 4 columns, 12 / 12 belt slots used
+
+| Item | Consumption /machine/s | Belts/column | Machines/column | Belt utilization |
+|---|---|---|---|---|
+| graphene | 0.750 | 1 | 40 | 100% |
+| titanium_ingot | 0.250 | 1 | 40 | 33% |
+
+---
+
+## Build Specification
+
+### Recipe: carbon_nanotube
+
+**Chemical Plant · Mk.III belt · Mk.III prolif · Maximize belts · No input stacking**
+
+**Column summary:**
+- 40 Chemical Plants per column
+- 4 columns
+- 160 Chemical Plants total
+- Each column requires:
+  - 1× graphene belt
+  - 1× titanium_ingot belt
+  - 1× output belt
+
+**Machine Count**
+
+| Step | Recipe | Building | Machines | Output /s |
+|---|---|---|---|---|
+| carbon_nanotube | 3 graphene + 1 titanium_ingot → 2 carbon_nanotube | Chemical Plant | 160 | 100 /s |
+
+**PLS 1** (12 / 12 belt slots used)
+| Slot | Item | Belts | Individual Belt /s | Total Belt /s | Demand /s |
+|---|---|---|---|---|---|
+| 1 | graphene | 4 | 30 /s | 120 /s | 120 /s |
+| 2 | titanium_ingot | 4 | 30 /s | 120 /s | 40 /s |
+| 3 | carbon_nanotube | 4 | 30 /s | 120 /s | 100 /s |
+
+- **Belt slots used:** 12 / 12
+- **Unused belt slots:** 0
+
+**Output Belt Utilization**
+- Each column: 25 /s on a 30 /s unstacked belt = **83% per belt**
+
+### Notes
+- titanium_ingot belts are 33% utilized — a consequence of the recipe's 3:1 graphene-to-titanium ratio. This is unavoidable without stacking titanium input belts, which is unnecessary given the low demand.
+- graphene supply must be reliable — input belts run at 100%.
+
+---
+
 ## Worked Example: particle_container (advanced)
 
 ## Workings
@@ -362,20 +457,22 @@ A production module is **bounded by its PLS input/output belt slots**. Designing
 - copper_ingot: 2/4 = 0.500 /s
 - particle_container output: (1/4) × 1.25 = 0.3125 /s
 
-**Natural belt ratio:** 2.500 / 0.500 = 5:1 → 5 unipolar + 1 copper = 6 input belts + 1 output = 7 belts per column — exceeds 6-belt cap.
+**Binding input:** unipolar_magnet at 2.500 /s
 
-**Apply cap:** 6 total belts, reserve 1 output → 5 input belts. Distribute proportionally at 5:1 → 4 unipolar + 1 copper (closest integers fitting in 5).
+**Machines per column:** 30 / 2.500 = 12 machines → 100% unipolar_magnet belt utilization
 
-**Machines per column:** 4 × 30 / 2.500 = 48 machines
-- copper demand: 48 × 0.500 = 24 /s → 1 belt, 80% utilized ✓
-- output: 48 × 0.3125 = 15 /s → below Mk.III belt speed (30 /s), unstacked ✓
+**Copper_ingot belts per column:** ceil(12 × 0.500 / 30) = ceil(0.200) = 1 belt → 12 × 0.500 = 6 /s → 20% utilized
 
-**Column count:** floor(12 / 6) = 2 columns, 12 / 12 belt slots used
+**Output per column:** 12 × 0.3125 = 3.75 /s → well below 30 /s, unstacked ✓
 
-| Item | Consumption /machine/s | Belt ratio | Belts/column | Machines to fill | Belt utilization |
-|---|---|---|---|---|---|
-| unipolar_magnet | 2.500 | 4 | 4 | 48 | 100% |
-| copper_ingot | 0.500 | 1 | 1 | 48 | 80% |
+**Belts per column:** 1 unipolar_magnet + 1 copper_ingot + 1 output = 3 belts ✓
+
+**Column count:** floor(12 / 3) = 4 columns, 12 / 12 belt slots used
+
+| Item | Consumption /machine/s | Belts/column | Machines/column | Belt utilization |
+|---|---|---|---|---|
+| unipolar_magnet | 2.500 | 1 | 12 | 100% |
+| copper_ingot | 0.500 | 1 | 12 | 20% |
 
 ---
 
@@ -386,11 +483,11 @@ A production module is **bounded by its PLS input/output belt slots**. Designing
 **Mk.II Assembler · Mk.III belt · Mk.III prolif · Maximize belts · No input stacking · Rare resource: unipolar_magnet**
 
 **Column summary:**
-- 48 Assemblers per column
-- 2 columns
-- 96 Assemblers total
+- 12 Assemblers per column
+- 4 columns
+- 48 Assemblers total
 - Each column requires:
-  - 4× unipolar_magnet belt
+  - 1× unipolar_magnet belt
   - 1× copper_ingot belt
   - 1× output belt
 
@@ -398,22 +495,21 @@ A production module is **bounded by its PLS input/output belt slots**. Designing
 
 | Step | Recipe | Building | Machines | Output /s |
 |---|---|---|---|---|
-| particle_container | 10 unipolar_magnet + 2 copper_ingot → 1 | Mk.II Assembler | 96 | 30 /s |
+| particle_container | 10 unipolar_magnet + 2 copper_ingot → 1 | Mk.II Assembler | 48 | 15 /s |
 
 **PLS 1** (12 / 12 belt slots used)
 | Slot | Item | Belts | Individual Belt /s | Total Belt /s | Demand /s |
 |---|---|---|---|---|---|
-| 1 | unipolar_magnet | 8 | 30 /s | 240 /s | 240 /s |
-| 2 | copper_ingot | 2 | 30 /s | 60 /s | 48 /s |
-| 3 | particle_container | 2 | 30 /s | 60 /s | 30 /s |
+| 1 | unipolar_magnet | 4 | 30 /s | 120 /s | 120 /s |
+| 2 | copper_ingot | 4 | 30 /s | 120 /s | 24 /s |
+| 3 | particle_container | 4 | 30 /s | 120 /s | 15 /s |
 
 - **Belt slots used:** 12 / 12
 - **Unused belt slots:** 0
 
 **Output Belt Utilization**
-- Each column: 15 /s on a 30 /s unstacked belt = **50% per belt**
+- Each column: 3.75 /s on a 30 /s unstacked belt = **12.5% per belt**
 
 ### Notes
 - unipolar_magnet is a rare vein resource — must be sourced and transported deliberately.
-- Output belt is 50% utilized — a consequence of the 6-belt-per-column cap.
-- copper_ingot at 80% per belt per column.
+- Output and copper_ingot belts are lightly utilized due to the recipe's high unipolar_magnet consumption rate dominating the column size.
