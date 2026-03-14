@@ -132,12 +132,12 @@ Proliferators are delivered via **logistics bots** (see Logistics Philosophy) so
 ### Planetary Logistics Station (PLS)
 
 - **Belt slots:** 12 total belt connections (inputs + outputs combined)
-- **Item slots:** 3 — maximum 3 distinct items can be configured to request or supply
+- **Item slots:** 4 — maximum 4 distinct items can be configured to request or supply
 - **Drone slots:** up to 50 logistics drones
 - Drones operate **within the same planet only**
 - Each belt slot can carry up to 30 /s (Mk.III), or more with stackers
 
-The 3-item slot limit is the primary design constraint. A module requiring 4+ distinct item flows must use **multiple PLS stations**. Multiple belt slots can be assigned to the same item to increase throughput (e.g. 4 belts × 30 /s = 120 /s for one item, consuming only 1 item slot).
+The 4-item slot limit is the primary design constraint. A module requiring 5+ distinct item flows must use **multiple PLS stations**. Multiple belt slots can be assigned to the same item to increase throughput (e.g. 4 belts × 30 /s = 120 /s for one item, consuming only 1 item slot).
 
 ### Interstellar Logistics Station (ILS)
 
