@@ -69,18 +69,21 @@ Produces: matrix_lab · chemical_plant · oil_extractor · oil_refinery · tesla
 ---
 
 ### Hub 4 — Logistics & Energy
-**9 inputs · 6 buildings**
+**12 inputs · 7 buildings**
 
-Produces: planetary_logistics_station · interstellar_logistics_station · logistics_bot · logistics_drone · logistics_distributor · energy_exchanger
+Produces: planetary_logistics_station · interstellar_logistics_station · orbital_collector · logistics_bot · logistics_drone · logistics_distributor · energy_exchanger
 
 | Input | Used by |
 |---|---|
+| accumulator_full | orbital_collector |
 | engine | logistics_bot |
 | iron_ingot | logistics_bot, logistics_drone, logistics_distributor |
 | particle_container | planetary_logistics_station, energy_exchanger |
 | plasma_exciter | logistics_distributor |
 | processor | planetary_logistics_station, logistics_bot, logistics_drone, logistics_distributor, energy_exchanger |
+| reinforced_thruster | orbital_collector |
 | steel | planetary_logistics_station, energy_exchanger |
+| super_magnetic_ring | orbital_collector |
 | thruster | logistics_drone |
 | titanium_alloy | interstellar_logistics_station, energy_exchanger |
 | titanium_ingot | planetary_logistics_station |
@@ -149,22 +152,19 @@ Produces: quantum_chemical_plant · vertical_launching_silo · artificial_star
 ---
 
 ### Hub 8 — End Game
-**11 inputs · 3 buildings**
+**9 inputs · 2 buildings**
 
-Produces: advanced_mining_machine · orbital_collector · self_evolution_lab
+Produces: advanced_mining_machine · self_evolution_lab
 
 | Input | Used by |
 |---|---|
-| accumulator_full | orbital_collector |
 | dark_fog_matrix | self_evolution_lab |
 | frame_material | advanced_mining_machine |
 | grating_crystal | advanced_mining_machine |
-| interstellar_logistics_station | orbital_collector |
 | matrix_lab | self_evolution_lab |
 | quantum_chip | advanced_mining_machine, self_evolution_lab |
-| reinforced_thruster | orbital_collector |
 | silicon_based_neuron | self_evolution_lab |
-| super_magnetic_ring | advanced_mining_machine, orbital_collector |
+| super_magnetic_ring | advanced_mining_machine |
 | titanium_alloy | advanced_mining_machine |
 
 ---
